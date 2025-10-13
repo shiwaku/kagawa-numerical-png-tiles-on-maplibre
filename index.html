@@ -1,0 +1,116 @@
+<html>
+  <head>
+    <title>香川県 高潮浸水想定区域図（数値PNGタイル）</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css"
+    />
+    <script src="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+    <script type="module" src="maplibre-shinsuishin-protocol.js"></script>
+    <style>
+      body {
+        margin: 0;
+      }
+
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+    <script type="text/javascript">
+      const protocol = new pmtiles.Protocol();
+      maplibregl.addProtocol("pmtiles", protocol.tile);
+
+      // マップの初期化
+      const map = new maplibregl.Map({
+        container: "map",
+        style: "std.json",
+        center: [134.04814, 34.33995],
+        zoom: 12,
+        pitch: 0,
+        maxPitch: 85,
+        bearing: 0,
+        hash: true,
+        attributionControl: false,
+      });
+
+      // ズーム・回転
+      map.addControl(new maplibregl.NavigationControl());
+
+      // フルスクリーンモードのオンオフ
+      map.addControl(new maplibregl.FullscreenControl());
+
+      // 現在位置表示
+      map.addControl(
+        new maplibregl.GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: false,
+          },
+          fitBoundsOptions: { maxZoom: 18 },
+          trackUserLocation: true,
+          showUserLocation: true,
+        })
+      );
+
+      // スケール表示
+      map.addControl(
+        new maplibregl.ScaleControl({
+          maxWidth: 200,
+          unit: "metric",
+        })
+      );
+
+      // Attributionを折りたたみ表示
+      map.addControl(
+        new maplibregl.AttributionControl({
+          compact: true,
+        })
+      );
+
+      // マップをロード
+      map.on("load", () => {
+        map.addSource("numerical-png-tiles", {
+          type: "raster",
+          tiles: [
+            "shinsui://https://xs489works.xsrv.jp/raster-tiles/pref-kagawa/hightide_l2_shinsuishin/{z}/{x}/{y}.png",
+          ],
+          attribution:
+            '<a href="https://opendata.pref.kagawa.lg.jp/dataset/525.html" target="_blank">香川県オープンデータ 高潮浸水想定区域図</a>',
+          tileSize: 256,
+        });
+
+        map.addLayer({
+          id: "shinsui-layer",
+          type: "raster",
+          source: "numerical-png-tiles",
+        });
+
+        // Skyレイヤ
+        map.setSky({
+          "sky-color": "#199EF3",
+          "sky-horizon-blend": 0.7,
+          "horizon-color": "#f0f8ff",
+          "horizon-fog-blend": 0.8,
+          "fog-color": "#2c7fb8",
+          "fog-ground-blend": 0.9,
+          "atmosphere-blend": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            0,
+            1,
+            12,
+            0,
+          ],
+        });
+      });
+    </script>
+  </body>
+</html>
