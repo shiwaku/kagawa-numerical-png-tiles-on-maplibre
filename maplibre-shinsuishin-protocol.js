@@ -3,17 +3,18 @@ import { encode as fastPngEncode } from "https://cdn.jsdelivr.net/npm/fast-png@6
 // 数値PNG(RGB) → 浸水深(m)
 const rgb2depth = (r, g, b) => (r * 65536 + g * 256 + b) * 0.001;
 
-// 浸水深 → パレット色
+// 浸水深 → パレット色（国交省仕様）
 const depth2color = (d) => {
   if (d >= 20.0) return [220, 122, 220, 255];
   if (d >= 10.0) return [242, 133, 201, 255];
   if (d >= 5.0) return [255, 145, 145, 255];
   if (d >= 3.0) return [255, 183, 183, 255];
-  if (d >= 0.5) return [255, 216, 192, 255];
+  if (d >= 1.0) return [255, 216, 192, 255];
+  if (d >= 0.5) return [248, 225, 166, 255];
+  if (d >= 0.3) return [247, 245, 169, 255];
   if (d > 0.0) return [247, 245, 169, 255];
   return [0, 0, 0, 0]; // 0 または NoData は透明
 };
-
 // 画像を読み→色変換→PNG(ArrayBuffer) を返す共通関数
 const buildPngArrayBuffer = (url) =>
   new Promise((resolve, reject) => {
