@@ -2,7 +2,7 @@ import { encode as fastPngEncode } from "https://cdn.jsdelivr.net/npm/fast-png@6
 
 // 数値PNG(RGB) → 浸水深(m)
 const rgb2depth = (r, g, b) => (r * 65536 + g * 256 + b) * 0.001;
-/*
+
 // 浸水深 → パレット色（国交省ガイドライン・バリアフリー配色）
 const depth2color = (d, ALPHA = 204) => {
   if (d >= 20.0) return [220, 122, 220, ALPHA]; // 20m～
@@ -15,8 +15,8 @@ const depth2color = (d, ALPHA = 204) => {
   if (d > 0.0) return [255, 255, 179, ALPHA]; // ～0.3m
   return [0, 0, 0, 0]; // 0 または NoData
 };
-*/
 
+/*
 // 浸水深 → パレット色（東京都「詳細配色版」準拠）
 // 例: depth2color(d) または depth2color(d, 255)
 const depth2color = (d, ALPHA = 204) => {
@@ -29,6 +29,7 @@ const depth2color = (d, ALPHA = 204) => {
   if (d > 0.0) return [255, 255, 204, ALPHA]; // ～0.1m（ごく浅い）
   return [0, 0, 0, 0]; // 0 または NoData は透明
 };
+*/
 
 // 画像を読み→色変換→PNG(ArrayBuffer) を返す共通関数
 const buildPngArrayBuffer = (url) =>
