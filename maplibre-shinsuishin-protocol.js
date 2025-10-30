@@ -2,34 +2,33 @@ import { encode as fastPngEncode } from "https://cdn.jsdelivr.net/npm/fast-png@6
 
 // 数値PNG(RGB) → 浸水深(m)
 const rgb2depth = (r, g, b) => (r * 65536 + g * 256 + b) * 0.001;
-
-// 浸水深 → パレット色（国交省マニュアル配色）
-const depth2color = (d) => {
-  if (d >= 20.0) return [220, 122, 220, 204];
-  if (d >= 10.0) return [242, 133, 201, 204];
-  if (d >= 5.0) return [255, 145, 145, 204];
-  if (d >= 3.0) return [255, 183, 183, 204];
-  if (d >= 1.0) return [255, 216, 192, 204];
-  if (d >= 0.5) return [248, 225, 166, 204];
-  if (d >= 0.3) return [247, 245, 169, 204];
-  if (d > 0.0) return [247, 245, 169, 204];
-  return [0, 0, 0, 0]; // 0 または NoData は透明
-};
-
 /*
-// 浸水深 → パレット色（好みの配色：例）東京都）
-const depth2color = (d) => {
-  if (d >= 20.0) return [215, 116, 195, 204];
-  if (d >= 10.0) return [215, 116, 195, 204];
-  if (d >= 5.0) return [215, 116, 195, 204];
-  if (d >= 3.0) return [0, 113, 255, 204];
-  if (d >= 1.0) return [48, 196, 225, 204];
-  if (d >= 0.5) return [77, 230, 0, 204];
-  if (d >= 0.3) return [255, 255, 0, 204];
-  if (d > 0.0) return [255, 255, 0, 204];
-  return [0, 0, 0, 0]; // 0 または NoData は透明
+// 浸水深 → パレット色（国交省ガイドライン・バリアフリー配色）
+const depth2color = (d, ALPHA = 204) => {
+  if (d >= 20.0) return [220, 122, 220, ALPHA]; // 20m～
+  if (d >= 10.0) return [242, 133, 201, ALPHA]; // 10～20m
+  if (d >= 5.0) return [255, 145, 145, ALPHA]; // 5～10m
+  if (d >= 3.0) return [255, 183, 183, ALPHA]; // 3～5m
+  if (d >= 1.0) return [255, 216, 192, ALPHA]; // 1～3m
+  if (d >= 0.5) return [248, 225, 166, ALPHA]; // 0.5～1m
+  if (d >= 0.3) return [247, 245, 169, ALPHA]; // 0.3～0.5m
+  if (d > 0.0) return [255, 255, 179, ALPHA]; // ～0.3m
+  return [0, 0, 0, 0]; // 0 または NoData
 };
 */
+
+// 浸水深 → パレット色（東京都「詳細配色版」準拠）
+// 例: depth2color(d) または depth2color(d, 255)
+const depth2color = (d, ALPHA = 204) => {
+  if (d >= 5.0) return [223, 115, 255, ALPHA]; // 5.0m以上（紫）
+  if (d >= 3.0) return [0, 112, 255, ALPHA]; // 3.0〜5.0m未満（青）
+  if (d >= 2.0) return [45, 193, 223, ALPHA]; // 2.0〜3.0m未満（水色）
+  if (d >= 1.0) return [115, 255, 222, ALPHA]; // 1.0〜2.0m未満（黄緑）
+  if (d >= 0.5) return [77, 230, 0, ALPHA]; // 0.5〜1.0m未満（黄）
+  if (d >= 0.1) return [255, 255, 0, ALPHA]; // 0.1〜0.5m未満（薄黄）
+  if (d > 0.0) return [255, 255, 204, ALPHA]; // ～0.1m（ごく浅い）
+  return [0, 0, 0, 0]; // 0 または NoData は透明
+};
 
 // 画像を読み→色変換→PNG(ArrayBuffer) を返す共通関数
 const buildPngArrayBuffer = (url) =>
