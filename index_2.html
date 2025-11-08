@@ -1,117 +1,173 @@
 <html>
-  <head>
-    <title>香川県 洪水浸水想定区域図（数値PNGタイル）</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css"
-    />
-    <script src="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js"></script>
-    <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
-    <script type="module" src="maplibre-shinsuishin-protocol.js"></script>
-    <style>
-      body {
-        margin: 0;
-      }
 
-      #map {
-        height: 100%;
-        width: 100%;
-      }
-    </style>
-  </head>
+<head>
+  <title>香川県 洪水浸水想定区域図（数値PNGタイル）</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css" />
+  <script src="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+  <script type="module" src="numerical-png-protocol.js"></script>
+  <script type="module" src="getNumericalValue.js"></script>
+  <style>
+    body {
+      margin: 0;
+    }
 
-  <body>
-    <div id="map"></div>
-    <script type="module">
-      const protocol = new pmtiles.Protocol();
-      maplibregl.addProtocol("pmtiles", protocol.tile);
+    #map {
+      height: 100%;
+      width: 100%;
+    }
 
-      // マップの初期化
-      const map = new maplibregl.Map({
-        container: "map",
-        style: "std.json",
-        center: [133.80607, 34.296],
-        zoom: 13.93,
-        pitch: 0,
-        maxPitch: 85,
-        bearing: 0,
-        hash: true,
-        attributionControl: false,
+    .maplibregl-popup .maplibregl-popup-content {
+      padding: 8px 10px;
+      font: 12px/14px Arial, Helvetica, sans-serif;
+      color: black;
+      background: white;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+      border-radius: 5px;
+      width: 150px;
+      height: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+  <script type="module">
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+
+    // マップの初期化
+    const map = new maplibregl.Map({
+      container: "map",
+      style: "std.json",
+      center: [133.80607, 34.296],
+      zoom: 13.93,
+      pitch: 0,
+      maxPitch: 85,
+      bearing: 0,
+      hash: true,
+      attributionControl: false,
+    });
+
+    // ズーム・回転
+    map.addControl(new maplibregl.NavigationControl());
+
+    // フルスクリーンモードのオンオフ
+    map.addControl(new maplibregl.FullscreenControl());
+
+    // 現在位置表示
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: false,
+        },
+        fitBoundsOptions: { maxZoom: 18 },
+        trackUserLocation: true,
+        showUserLocation: true,
+      })
+    );
+
+    // スケール表示
+    map.addControl(
+      new maplibregl.ScaleControl({
+        maxWidth: 200,
+        unit: "metric",
+      })
+    );
+
+    // Attributionを折りたたみ表示
+    map.addControl(
+      new maplibregl.AttributionControl({
+        compact: true,
+      })
+    );
+
+    // マップをロード
+    map.on("load", () => {
+      map.addSource("numerical-png-tiles", {
+        type: "raster",
+        tiles: [
+          // "numpng://https://xs489works.xsrv.jp/raster-tiles/pref-kagawa/hightide_l2_shinsuishin/{z}/{x}/{y}.png",
+          "numpng://https://public-data.geolonia.com/pref-kagawa/flood_l2_shinsuishin/{z}/{x}/{y}.png",
+        ],
+        attribution:
+          '<a href="https://opendata.pref.kagawa.lg.jp/dataset/525.html" target="_blank">香川県オープンデータ 洪水浸水想定区域図</a>',
+        tileSize: 256,
       });
 
-      // ズーム・回転
-      map.addControl(new maplibregl.NavigationControl());
-
-      // フルスクリーンモードのオンオフ
-      map.addControl(new maplibregl.FullscreenControl());
-
-      // 現在位置表示
-      map.addControl(
-        new maplibregl.GeolocateControl({
-          positionOptions: {
-            enableHighAccuracy: false,
-          },
-          fitBoundsOptions: { maxZoom: 18 },
-          trackUserLocation: true,
-          showUserLocation: true,
-        })
-      );
-
-      // スケール表示
-      map.addControl(
-        new maplibregl.ScaleControl({
-          maxWidth: 200,
-          unit: "metric",
-        })
-      );
-
-      // Attributionを折りたたみ表示
-      map.addControl(
-        new maplibregl.AttributionControl({
-          compact: true,
-        })
-      );
-
-      // マップをロード
-      map.on("load", () => {
-        map.addSource("numerical-png-tiles", {
-          type: "raster",
-          tiles: [
-            // "shinsui://https://xs489works.xsrv.jp/raster-tiles/pref-kagawa/hightide_l2_shinsuishin/{z}/{x}/{y}.png",
-            "shinsui://https://public-data.geolonia.com/pref-kagawa/flood_l2_shinsuishin/{z}/{x}/{y}.png",
-          ],
-          attribution:
-            '<a href="https://opendata.pref.kagawa.lg.jp/dataset/525.html" target="_blank">香川県オープンデータ 洪水浸水想定区域図</a>',
-          tileSize: 256,
-        });
-
-        map.addLayer({
-          id: "shinsui-layer",
-          type: "raster",
-          source: "numerical-png-tiles",
-        });
-
-        // Skyレイヤ
-        map.setSky({
-          "sky-color": "#199EF3",
-          "sky-horizon-blend": 0.7,
-          "horizon-color": "#f0f8ff",
-          "horizon-fog-blend": 0.8,
-          "fog-color": "#2c7fb8",
-          "fog-ground-blend": 0.9,
-          "atmosphere-blend": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            0,
-            1,
-            12,
-            0,
-          ],
-        });
+      map.addLayer({
+        id: "shinsui-layer",
+        type: "raster",
+        source: "numerical-png-tiles",
       });
-    </script>
-  </body>
+
+      // Skyレイヤ
+      map.setSky({
+        "sky-color": "#199EF3",
+        "sky-horizon-blend": 0.7,
+        "horizon-color": "#f0f8ff",
+        "horizon-fog-blend": 0.8,
+        "fog-color": "#2c7fb8",
+        "fog-ground-blend": 0.9,
+        "atmosphere-blend": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          0,
+          1,
+          12,
+          0,
+        ],
+      });
+    });
+    map.on("click", function (e) {
+      const lng = e.lngLat.lng;
+      const lat = e.lngLat.lat;
+      const zoomLevel = Math.trunc(map.getZoom());
+      const tiles =
+        "https://public-data.geolonia.com/pref-kagawa/flood_l2_shinsuishin/{z}/{x}/{y}.png";
+
+      // タイルは z=4〜14 を配信しているため、範囲外はメッセージ表示（任意）
+      if (zoomLevel < 4 || zoomLevel > 18) {
+        new maplibregl.Popup()
+          .setLngLat([lng, lat])
+          .setHTML(
+            `<b>クリック地点</b><br>
+         緯度：${lat.toFixed(5)}<br>
+         経度：${lng.toFixed(5)}<br>
+         ズーム：${zoomLevel}<br>
+         このズームではデータがありません（4〜18でご確認ください）`
+          )
+          .addTo(map);
+        return;
+      }
+
+      // 数値PNGは「実数 → ×1000で整数化」してRGBへ分解済み
+      //  → 元の実数人口へ戻すため factor=0.001 を指定
+      //  NoData は alpha=0（=透明）で表現、UInt32作成時の 0 は「人口0人」
+      getNumericalValue(tiles, lat, lng, zoomLevel, 0.001, 0, 0).then(
+        (value) => {
+          const text = isNaN(value)
+            ? "データなし"
+            : `浸水深：${value.toFixed(3)}m`;
+
+          new maplibregl.Popup()
+            .setLngLat([lng, lat])
+            .setHTML(
+              `<b>クリック地点</b><br>
+         緯度：${lat.toFixed(5)}<br>
+         経度：${lng.toFixed(5)}<br>
+         ズームレベル：${zoomLevel}<br>
+         ${text}`
+            )
+            .addTo(map);
+        }
+      );
+    });
+  </script>
+</body>
+
 </html>
